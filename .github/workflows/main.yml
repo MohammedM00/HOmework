@@ -1,0 +1,79 @@
+using System.Data.SqlClient;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string connectionString = "data source=SANDUR;initial catalog=Northwind;trusted_connection=true";
+
+        try
+        {
+            // Create the connection
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                //1) Query the Categories table and print out the first 10 items (order by the CategoryName descendingly) onto the console
+                Console.WriteLine("Top 10 Categories");
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT TOP 10 CategoryName FROM Categories ORDER BY CategoryName DESC";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Console.WriteLine(reader.GetString(reader.GetOrdinal("CategoryName")));
+                        }
+                    }
+                }
+
+                //2) Query the Products table and print out the first 10 items (order by the ProductName descendingly) onto the console
+                Console.WriteLine("\nTop 10 Products");
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT TOP 10 ProductName FROM Products ORDER BY ProductName DESC";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Console.WriteLine(reader.GetString(reader.GetOrdinal("ProductName")));
+                        }
+                    }
+                }
+
+                //3) Ask the user to provide a name for the category on the console and insert a new record into the Categories table
+                Console.Write("\nEnter a new category to insert: ");
+                string categoryName = Console.ReadLine();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "INSERT INTO Categories(CategoryName) VALUES(@CategoryName)";
+                    cmd.Parameters.AddWithValue("@CategoryName", categoryName);
+                    if(cmd.ExecuteNonQuery() > 0)
+                    {
+                        Console.WriteLine("The category " + categoryName + " is added");
+                    }
+                }
+
+                //4) Ask the user to provide a name for the product on the console
+                //insert a new record into the Products table (you can define the values for other fields).
+                Console.Write("\nEnter a new product to insert: ");
+                string productName = Console.ReadLine();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "INSERT INTO Products(ProductName) VALUES(@ProductName)";
+                    cmd.Parameters.AddWithValue("@ProductName", productName);
+                    if (cmd.ExecuteNonQuery() > 0)
+                    {
+                        Console.WriteLine("The product " + productName + " is added");
+                    }
+                }
+
+                conn.Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}
